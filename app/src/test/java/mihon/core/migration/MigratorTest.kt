@@ -30,7 +30,7 @@ class MigratorTest {
         migrationContext = MigrationContext(false)
         migrationJobFactory =
             spyk(MigrationJobFactory(migrationContext, CoroutineScope(Dispatchers.Main + Job())))
-        migrationCompletedListener = spyk<MigrationCompletedListener>(block = {})
+        migrationCompletedListener = spyk(MigrationCompletedListener {})
         migrationStrategyFactory =
             spyk(MigrationStrategyFactory(migrationJobFactory, migrationCompletedListener))
     }
