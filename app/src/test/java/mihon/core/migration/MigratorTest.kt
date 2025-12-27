@@ -1,5 +1,6 @@
 package mihon.core.migration
 
+import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
@@ -30,7 +31,7 @@ class MigratorTest {
         migrationContext = MigrationContext(false)
         migrationJobFactory =
             spyk(MigrationJobFactory(migrationContext, CoroutineScope(Dispatchers.Main + Job())))
-        migrationCompletedListener = spyk(MigrationCompletedListener {})
+        migrationCompletedListener = mockk(relaxed = true)
         migrationStrategyFactory =
             spyk(MigrationStrategyFactory(migrationJobFactory, migrationCompletedListener))
     }
