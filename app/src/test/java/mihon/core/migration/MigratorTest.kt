@@ -26,7 +26,7 @@ class MigratorTest {
     lateinit var migrationStrategyFactory: MigrationStrategyFactory
 
     @BeforeEach
-    fun initilize() {
+    fun initialize() {
         migrationContext = MigrationContext(false)
         migrationJobFactory =
             spyk(MigrationJobFactory(migrationContext, CoroutineScope(Dispatchers.Main + Job())))
@@ -139,7 +139,7 @@ class MigratorTest {
                 Migration.of(Migration.ALWAYS) { true },
                 Migration.of(2f) { true },
                 Migration.of(3f) { false },
-            )
+            ),
         )
 
         execute.await()
