@@ -1,12 +1,11 @@
-name: Fix Spotless
+name: Fix Spotless Formatting
 
 on:
-  workflow_dispatch:   # Permet de lancer manuellement depuis GitHub
+  workflow_dispatch:
 
 jobs:
-  spotless:
+  fix-spotless:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
 
@@ -23,10 +22,10 @@ jobs:
     - name: Apply Spotless formatting
       run: ./gradlew :app:spotlessApply
 
-    - name: Commit and push changes
+    - name: Commit and push Spotless fixes
       run: |
         git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
+        git config user.email "github-actions@users.noreply.github.com"
         git add .
-        git commit -m "Apply Spotless formatting" || echo "No changes to commit"
-        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:${{ github.ref }}
+        git commit -m "Apply Spotless formatting"
+        git push https://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@github.com/ferelking242/PORNYOMI.git HEAD:main
