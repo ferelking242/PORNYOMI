@@ -1,10 +1,10 @@
 name: Fix Spotless
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:   # Permet de lancer manuellement depuis GitHub
 
 jobs:
-  fix-format:
+  spotless:
     runs-on: ubuntu-latest
 
     steps:
@@ -15,6 +15,7 @@ jobs:
       with:
         java-version: '11'
         distribution: 'temurin'
+        cache: gradle
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -22,10 +23,10 @@ jobs:
     - name: Apply Spotless formatting
       run: ./gradlew :app:spotlessApply
 
-    - name: Commit and push formatted code
+    - name: Commit and push changes
       run: |
         git config user.name "github-actions"
-        git config user.email "actions@github.com"
+        git config user.email "github-actions@github.com"
         git add .
         git commit -m "Apply Spotless formatting" || echo "No changes to commit"
-        git push
+        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:${{ github.ref }}
