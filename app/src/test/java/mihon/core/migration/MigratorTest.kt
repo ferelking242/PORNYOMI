@@ -28,9 +28,11 @@ class MigratorTest {
     @BeforeEach
     fun initilize() {
         migrationContext = MigrationContext(false)
-        migrationJobFactory = spyk(MigrationJobFactory(migrationContext, CoroutineScope(Dispatchers.Main + Job())))
+        migrationJobFactory =
+            spyk(MigrationJobFactory(migrationContext, CoroutineScope(Dispatchers.Main + Job())))
         migrationCompletedListener = spyk<MigrationCompletedListener>(block = {})
-        migrationStrategyFactory = spyk(MigrationStrategyFactory(migrationJobFactory, migrationCompletedListener))
+        migrationStrategyFactory =
+            spyk(MigrationStrategyFactory(migrationJobFactory, migrationCompletedListener))
     }
 
     @Test
@@ -41,7 +43,7 @@ class MigratorTest {
         val migrations = slot<List<Migration>>()
         val migrationList = listOf(
             Migration.of(Migration.ALWAYS) { true },
-            Migration.of(2f) { false } // Non exécutée
+            Migration.of(2f) { false }, // Non exécutée
         )
 
         val execute = strategy(migrationList)
@@ -60,7 +62,8 @@ class MigratorTest {
         val strategy = migrationStrategyFactory.create(1, 1)
         assertInstanceOf(NoopMigrationStrategy::class.java, strategy)
 
-        val execute = strategy(listOf(Migration.of(Migration.ALWAYS) { true }, Migration.of(2f) { false }))
+        val execute =
+            strategy(listOf(Migration.of(Migration.ALWAYS) { true }, Migration.of(2f) { false }))
 
         val result = execute.await()
         assertFalse(result)
@@ -87,7 +90,8 @@ class MigratorTest {
         assertInstanceOf(VersionRangeMigrationStrategy::class.java, strategy)
 
         val migrations = slot<List<Migration>>()
-        val execute = strategy(listOf(Migration.of(Migration.ALWAYS) { true }, Migration.of(2f) { true }))
+        val execute =
+            strategy(listOf(Migration.of(Migration.ALWAYS) { true }, Migration.of(2f) { true }))
 
         execute.await()
 
@@ -108,7 +112,7 @@ class MigratorTest {
             Migration.of(7f) { true },
             Migration.of(8f) { true },
             Migration.of(9f) { true },
-            Migration.of(10f) { true }
+            Migration.of(10f) { true },
         )
 
         val strategy = migrationStrategyFactory.create(1, 10)
@@ -134,7 +138,7 @@ class MigratorTest {
             listOf(
                 Migration.of(Migration.ALWAYS) { true },
                 Migration.of(2f) { true },
-                Migration.of(3f) { false }
+                Migration.of(3f) { false },
             )
         )
 
