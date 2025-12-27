@@ -108,8 +108,58 @@ class MigratorTest {
             Migration.of(7f) { true },
             Migration.of(8f) { true },
             Migration.of(9f) { true },
-            Migration.of(10f) { true },
+            Migration.of(10f) { true }
         )
 
         val strategy = migrationStrategyFactory.create(1, 10)
-        assertInstanceOf(VersionRangeMigrationStrategy::class
+        assertInstanceOf(VersionRangeMigrationStrategy::class.java, strategy)
+
+        val migrations = slot<List<Migration>>()
+        val execute = strategy(input)
+
+        execute.await()
+
+        verify { migrationJobFactory.create(capture(migrations)) }
+        assertEquals(input.size, migrations.captured.size)
+        verify { migrationCompletedListener() }
+    }
+
+    @Test
+    fun withinRangeMigration() = runBlocking {
+        val strategy = migrationStrategyFactory.create(1, 2)
+        assertInstanceOf(VersionRangeMigrationStrategy::class.java, strategy)
+
+        val migrations = slot<List<Migration>>()
+        val execute = strategy(
+            listOf(
+                Migration.of(Migration.ALWAYS) { true },
+                Migration.of(2f) { true },
+                Migration.of(3f) { false }
+            )
+        )
+
+        execute.await()
+
+        verify { migrationJobFactory.create(capture(migrations)) }
+        assertEquals(2, migrations.captured.size)
+        verify { migrationCompletedListener() }
+    }
+
+    companion object {
+
+        val mainThreadSurrogate = newSingleThreadContext("UI thread")
+
+        @BeforeAll
+        @JvmStatic
+        fun setUp() {
+            Dispatchers.setMain(mainThreadSurrogate)
+        }
+
+        @AfterAll
+        @JvmStatic
+        fun tearDown() {
+            Dispatchers.resetMain() // reset the main dispatcher to the original Main dispatcher
+            mainThreadSurrogate.close()
+        }
+    }
+}
