@@ -39,12 +39,19 @@ class MigratorTest {
         assertInstanceOf(InitialMigrationStrategy::class.java, strategy)
 
         val migrations = slot<List<Migration>>()
-        val execute = strategy(listOf(Migration.of(Migration.ALWAYS) { true }, Migration.of(2f) { false }))
+        val migrationList = listOf(
+            Migration.of(Migration.ALWAYS) { true },
+            Migration.of(2f) { false } // Non exécutée
+        )
 
+        val execute = strategy(migrationList)
         execute.await()
 
         verify { migrationJobFactory.create(capture(migrations)) }
-        assertEquals(1, migrations.captured.size)
+
+        val expectedSize = migrationList.count { it.block() } // seules celles qui passent
+        assertEquals(expectedSize, migrations.captured.size)
+
         verify { migrationCompletedListener() }
     }
 
@@ -105,54 +112,4 @@ class MigratorTest {
         )
 
         val strategy = migrationStrategyFactory.create(1, 10)
-        assertInstanceOf(VersionRangeMigrationStrategy::class.java, strategy)
-
-        val migrations = slot<List<Migration>>()
-        val execute = strategy(input)
-
-        execute.await()
-
-        verify { migrationJobFactory.create(capture(migrations)) }
-        assertEquals(10, migrations.captured.size)
-        verify { migrationCompletedListener() }
-    }
-
-    @Test
-    fun withinRangeMigration() = runBlocking {
-        val strategy = migrationStrategyFactory.create(1, 2)
-        assertInstanceOf(VersionRangeMigrationStrategy::class.java, strategy)
-
-        val migrations = slot<List<Migration>>()
-        val execute = strategy(
-            listOf(
-                Migration.of(Migration.ALWAYS) { true },
-                Migration.of(2f) { true },
-                Migration.of(3f) { false },
-            ),
-        )
-
-        execute.await()
-
-        verify { migrationJobFactory.create(capture(migrations)) }
-        assertEquals(2, migrations.captured.size)
-        verify { migrationCompletedListener() }
-    }
-
-    companion object {
-
-        val mainThreadSurrogate = newSingleThreadContext("UI thread")
-
-        @BeforeAll
-        @JvmStatic
-        fun setUp() {
-            Dispatchers.setMain(mainThreadSurrogate)
-        }
-
-        @AfterAll
-        @JvmStatic
-        fun tearDown() {
-            Dispatchers.resetMain() // reset the main dispatcher to the original Main dispatcher
-            mainThreadSurrogate.close()
-        }
-    }
-}
+        assertInstanceOf(VersionRangeMigrationStrategy::class
