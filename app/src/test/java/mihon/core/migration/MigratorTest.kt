@@ -52,7 +52,7 @@ class MigratorTest {
 
         verify { migrationJobFactory.create(capture(migrations)) }
 
-        val expectedSize = migrationList.count { it.block() } // seules celles qui passent
+        val expectedSize = migrationList.count { it(migrationContext) } // seules celles qui passent
         assertEquals(expectedSize, migrations.captured.size)
 
         verify { migrationCompletedListener() }
